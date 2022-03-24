@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<head>
+    <title>Register User's Details</title>
+</head>
+
+<body>
+    <form>
+        <div>
+            <label>Name: </label><br/>
+            <input id="name" name="name"/>
+        </div>
+        <div>
+            <label>DOB: </label><br/>
+            <input id="dob" name="dob"/>
+        </div>
+        <div>
+            <label>Address: </label><br/>
+            <input id="address" name="naddressame"/>
+        </div>
+        <div>
+            <label>Postcode: </label><br/>
+            <input id="postcode" name="postcode"/>
+        </div>
+        <div>
+            <label>State: </label><br/>
+            <input disabled id="state" name="state"/>
+        </div><br>
+        <button type="button" onclick="submitData()" >Submit</button>
+        <button type="button" onclick="listUser()" >List User</button>
+
+    </form>
+    <br>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Address</th>
+                <th>Postalcode</th>
+                <th>State</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+</body>
+
+<script >
+    async function submitData(){
+        const name = document.getElementById('name').value;
+        const dob = document.getElementById('dob').value;
+        const address = document.getElementById('address').value;
+        const postcode = document.getElementById('postcode').value;
+        let state;
+        
+        if(postcode){
+            const _xhttp = new XMLHttpRequest();
+            _xhttp.open('GET', `http://localhost:3303/state/${postcode}`, false);
+            _xhttp.send();
+            if(_xhttp.response){
+                state = _xhttp.response;
+                document.getElementById('state').value = state;
+            }
+        }
+
+        const obj = {name: name, dob: dob, address: address, postcode: postcode, state: state};
+        const jsonObj = JSON.stringify(obj);
+        
+        const xhttp = new XMLHttpRequest();
+
+        xhttp.open('POST', 'http://localhost:3303/user');
+        xhttp.setRequestHeader("Content-type", "application/json");
+        xhttp.send(jsonObj);
+        
+    }
+
+    async function listUser(){
+        const xhttp = new XMLHttpRequest();
+        xhttp.open('GET', 'http://localhost:3303/user', false);
+        xhttp.send();
+        const userList = eval(xhttp.response);
+        const today = new Date();
+
+        userList.forEach((user)=>{
+
+            const thisYear = today.getFullYear();
+            const birthYear = new Date(user.dob).getFullYear();
+            const age = thisYear - birthYear;
+
+            const temp = document.getElementById('tableBody');
+            temp.innerHTML +=
+                "<tr>"
+            + "<td>" + user.name + "</td>"
+            + "<td>" + age + "</td>"
+            + "<td>" + user.address + "</td>"
+            + "<td>" + user.postcode + "</td>"
+            + "<td>" + user.stateId + "</td>"
+            + "</tr>"
+
+        });
+
+    }
+</script>
